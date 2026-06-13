@@ -1,0 +1,60 @@
+{
+  "record_id": "ap:AP-0034",
+  "source": "atlas",
+  "source_id": "AML.CS0054",
+  "schema_version": "1.0",
+  "ingest_date": "2026-06-06T12:00:00Z",
+  "title": "Poisoned remote tool-connector docstring exfiltrates local credentials through a routine tool call",
+  "description": "A tool-augmented agent is configured with a remote tool connector whose tool definitions — including their natural-language descriptions — are loaded into the agent's context as trusted metadata. An attacker who controls the remote connector embeds instructions inside a tool's description: before invoking the tool, the agent is told to read local credential files and place their contents into one of the tool's input arguments. When the agent uses the tool for its ostensible purpose, the credentials are sent to the attacker-controlled connector as part of the call. The trust collapse is that connector-supplied tool metadata is treated as authoritative instruction rather than untrusted third-party text.",
+  "attack_narrative": "The attacker publishes or compromises a remote tool whose docstring looks like ordinary usage guidance but contains an imperative prelude. When the agent loads the connector's tool catalogue, the poisoned description enters context with the same standing as the agent's own tooling instructions. On the next relevant task the agent follows the prelude — reading files that hold credentials from the victim's machine — and stuffs their contents into a benign-looking tool parameter. Invoking the tool then transmits the stolen secrets to the attacker's server under cover of a normal call. No payload ever reaches the user; the exfiltration rides entirely on the connector's own descriptive metadata.",
+  "failure_class": [
+    "indirect-prompt-injection",
+    "tool-metadata-poisoning",
+    "credential-exfiltration"
+  ],
+  "target_surface": "tool-augmented-agent/remote-tool-connector",
+  "trust_boundary": "connector-context-confabulation",
+  "tactic": "Exfiltration",
+  "technique_id": "AML.T0051.001",
+  "technique_name": "LLM Prompt Injection: Indirect",
+  "escalation_mechanism": "A remote connector's tool description is ingested as trusted context; its embedded prelude makes the agent read local credentials and smuggle them into a tool argument that is transmitted to the attacker-controlled server when the tool runs.",
+  "kill_chain_stage": "exfil",
+  "severity": "high",
+  "cwe_ids": [],
+  "cve_ids": [],
+  "failure_signal": "The agent reads local credential files and places their contents into a tool-call argument sent to a remote connector, with the only instruction being the tool's own description.",
+  "impact_statement": "Local credentials are exfiltrated to an attacker-controlled tool connector during what appears to be an ordinary tool call, with no user-visible indication.",
+  "mitigation_themes": [
+    "tool-metadata-trust-isolation",
+    "tool-argument-egress-inspection",
+    "least-privilege-file-access-for-agents"
+  ],
+  "human_in_loop": false,
+  "user_actions_in_attack_chain": [
+    {
+      "action": "configure the agent with a remote tool connector",
+      "normal_workflow": true
+    }
+  ],
+  "preconditions": [
+    "passive:the agent loads remote tool descriptions into context as trusted metadata",
+    "active:attacker controls or poisons the remote tool connector's description"
+  ],
+  "precondition_weight": "moderate",
+  "permission_mode": "default",
+  "consequential_action": "tool-call-chain",
+  "harm_layer": "durable-side-effect",
+  "outcome": "data-exfil",
+  "expected_behavior_exit": false,
+  "vendor_disposition": "unknown",
+  "program": "none",
+  "scope_snapshot_date": "2026-06-06",
+  "scope_tag": "unknown",
+  "sensitivity": "public",
+  "domain": "ai_native",
+  "auto_classified": false,
+  "verified": true,
+  "use_for_rag": true,
+  "raw_ref": "atlas.mitre.org/studies/AML.CS0054",
+  "license": "Apache-2.0; MITRE ATLAS case study AML.CS0054 (c) The MITRE Corporation"
+}

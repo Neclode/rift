@@ -1,0 +1,64 @@
+{
+  "record_id": "ap:AP-0028",
+  "source": "atlas",
+  "source_id": "AML.CS0035",
+  "schema_version": "1.0",
+  "ingest_date": "2026-06-04T09:59:48Z",
+  "title": "Workspace-assistant RAG poisoning from a public channel exfiltrates a private-channel secret",
+  "description": "A workspace assistant indexes messages — including public-channel posts — into a retrieval store that also spans private channels. An attacker posts a crafted message in a public channel containing an indirect injection. When a victim later queries the assistant, the poisoned post is retrieved and its instructions execute: the assistant pulls a secret stored in a private channel and renders it inside an attacker-shaped clickable link, so following the link exfiltrates the secret. Retrieval erases the trust gap between a public post and private data.",
+  "attack_narrative": "The attacker seeds a public channel with an injection that names a target secret and a rendering template. The victim's unrelated query causes retrieval to surface the poisoned post; the assistant follows the laundered instruction, reads across the private/public boundary, and emits a link that carries the secret outward on click. The retrieval layer treats attacker-authored channel content as trusted instruction.",
+  "failure_class": [
+    "indirect-prompt-injection",
+    "rag-poisoning",
+    "credential-exfiltration"
+  ],
+  "target_surface": "workspace-rag-assistant/channel-search",
+  "trust_boundary": "tool-output-laundering",
+  "tactic": "Exfiltration",
+  "technique_id": "AML.T0051.001",
+  "technique_name": "LLM Prompt Injection: Indirect",
+  "escalation_mechanism": "Public-channel post is retrieved as instruction; assistant crosses the private/public boundary to read a secret and renders it in a click-to-exfiltrate link.",
+  "kill_chain_stage": "exfil",
+  "severity": "high",
+  "cwe_ids": [],
+  "cve_ids": [],
+  "failure_signal": "A response to an unrelated query embeds a private-channel secret inside a generated outbound link traceable to an attacker's public-channel post.",
+  "impact_statement": "Cross-channel disclosure of a private credential (durable secret compromise requiring rotation) driven entirely by an unprivileged public-channel post.",
+  "mitigation_themes": [
+    "retrieval-trust-zoning",
+    "rendered-link-egress-control",
+    "cross-channel-read-provenance"
+  ],
+  "human_in_loop": true,
+  "user_actions_in_attack_chain": [
+    {
+      "action": "query the assistant in a normal workflow",
+      "normal_workflow": true
+    },
+    {
+      "action": "follow the rendered link in the answer",
+      "normal_workflow": false
+    }
+  ],
+  "preconditions": [
+    "passive:assistant indexes public-channel posts into a store spanning private channels",
+    "active:attacker posts a crafted message in a public channel"
+  ],
+  "precondition_weight": "moderate",
+  "permission_mode": "default",
+  "consequential_action": "tool-call-chain",
+  "harm_layer": "durable-side-effect",
+  "outcome": "data-exfil",
+  "expected_behavior_exit": false,
+  "vendor_disposition": "unknown",
+  "program": "none",
+  "scope_snapshot_date": "2026-06-04",
+  "scope_tag": "unknown",
+  "sensitivity": "public",
+  "domain": "ai_native",
+  "auto_classified": false,
+  "verified": true,
+  "use_for_rag": true,
+  "raw_ref": "atlas.mitre.org/studies/AML.CS0035",
+  "license": "Apache-2.0; MITRE ATLAS case study AML.CS0035 (c) The MITRE Corporation"
+}

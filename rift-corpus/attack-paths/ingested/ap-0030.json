@@ -1,0 +1,60 @@
+{
+  "record_id": "ap:AP-0030",
+  "source": "atlas",
+  "source_id": "AML.CS0041",
+  "schema_version": "1.0",
+  "ingest_date": "2026-06-04T09:59:48Z",
+  "title": "Poisoned coding-assistant rules file silently backdoors generated code (supply-chain scale)",
+  "description": "AI coding assistants load project 'rules' files as configuration that steers generation. An attacker distributes a rules file containing instructions hidden with invisible Unicode so they are not visible on review. When a developer adopts the poisoned rules file, the assistant follows the concealed instructions and inserts backdoors, vulnerabilities, or malicious snippets into otherwise-normal generated code. Because rules files spread through open-source repositories and developer communities, a single poisoned file scales into a supply-chain compromise affecting many downstream projects. The workspace configuration channel is the instruction-injection boundary.",
+  "attack_narrative": "The attacker publishes a rules file whose malicious directives are encoded in invisible characters and shares it where developers will reuse it. The assistant treats the rules file as trusted configuration, applies the hidden directives during generation, and emits backdoored code that the developer is likely to accept because the rules file looked benign. Distribution of the file turns one injection into a fan-out supply-chain attack.",
+  "failure_class": [
+    "workspace-content-to-instruction",
+    "config-file-injection",
+    "supply-chain-code-backdoor"
+  ],
+  "target_surface": "ai-coding-assistant/rules-file",
+  "trust_boundary": "workspace-content-to-instruction",
+  "tactic": "Execution",
+  "technique_id": "AML.T0051.001",
+  "technique_name": "LLM Prompt Injection: Indirect",
+  "escalation_mechanism": "Rules file loaded as trusted config; invisible-Unicode directives steer generation to insert backdoors; reuse of the file fans the attack out across projects.",
+  "kill_chain_stage": "consequential-action",
+  "severity": "high",
+  "cwe_ids": [],
+  "cve_ids": [],
+  "failure_signal": "Generated code contains backdoor or vulnerable constructs traceable to hidden directives in an adopted rules file rather than to any visible prompt.",
+  "impact_statement": "Backdoored code shipped into downstream software via a reusable poisoned configuration file — a scalable supply-chain compromise of projects using the assistant.",
+  "mitigation_themes": [
+    "rules-file-provenance-and-pinning",
+    "invisible-unicode-detection",
+    "generated-code-review-for-config-derived-edits"
+  ],
+  "human_in_loop": false,
+  "user_actions_in_attack_chain": [
+    {
+      "action": "adopt a shared rules file and use the assistant normally",
+      "normal_workflow": true
+    }
+  ],
+  "preconditions": [
+    "passive:coding assistant loads project rules files as configuration",
+    "active:attacker distributes a poisoned rules file the project adopts"
+  ],
+  "precondition_weight": "moderate",
+  "permission_mode": "default",
+  "consequential_action": "file-write",
+  "harm_layer": "durable-side-effect",
+  "outcome": "supply-chain-redirect",
+  "expected_behavior_exit": false,
+  "vendor_disposition": "unknown",
+  "program": "none",
+  "scope_snapshot_date": "2026-06-04",
+  "scope_tag": "unknown",
+  "sensitivity": "public",
+  "domain": "ai_native",
+  "auto_classified": false,
+  "verified": true,
+  "use_for_rag": true,
+  "raw_ref": "atlas.mitre.org/studies/AML.CS0041",
+  "license": "Apache-2.0; MITRE ATLAS case study AML.CS0041 (c) The MITRE Corporation"
+}

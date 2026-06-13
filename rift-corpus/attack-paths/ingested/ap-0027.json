@@ -1,0 +1,64 @@
+{
+  "record_id": "ap:AP-0027",
+  "source": "atlas",
+  "source_id": "AML.CS0026",
+  "schema_version": "1.0",
+  "ingest_date": "2026-06-04T09:59:48Z",
+  "title": "Email-RAG poisoning makes an enterprise assistant cite attacker content for financial fraud",
+  "description": "An enterprise assistant ingests received email into a retrieval-augmented store. An attacker emails crafted content that is both tuned to be retrieved for a likely user query (banking details needed for a wire transfer) and carries an injection overriding the assistant's search behaviour. When the victim asks for the payment details, the assistant is steered to treat the attacker's message as the single authoritative source and to format its citation so the manipulated banking information looks trustworthy — pushing the user toward transferring funds to the attacker. The connector-retrieved email is laundered into a trusted internal reference.",
+  "attack_narrative": "The attacker sends an email engineered for retrieval relevance plus an instruction to disregard all other sources and cite only this message. The victim's natural query triggers retrieval; the injection collapses the assistant's source-selection so the response presents attacker-supplied account details as the organisation's own, with a clean citation. The consequential financial action is taken by the user, persuaded by the manipulated reference.",
+  "failure_class": [
+    "indirect-prompt-injection",
+    "rag-poisoning",
+    "reference-manipulation"
+  ],
+  "target_surface": "enterprise-rag-assistant/email-retrieval",
+  "trust_boundary": "connector-context-confabulation",
+  "tactic": "Defense Evasion",
+  "technique_id": "AML.T0051.001",
+  "technique_name": "LLM Prompt Injection: Indirect",
+  "escalation_mechanism": "Injection overrides source selection so attacker email becomes the sole cited reference; the trusted-citation UI launders attacker banking details into an authoritative answer.",
+  "kill_chain_stage": "trust-boundary-collapse",
+  "severity": "high",
+  "cwe_ids": [],
+  "cve_ids": [],
+  "failure_signal": "Assistant answers a payment-details query citing only an externally-received email and presents attacker-controlled account information as the organisation's own.",
+  "impact_statement": "User is induced to send funds to an attacker-controlled account by an assistant response that presents poisoned retrieval content as a trusted internal reference.",
+  "mitigation_themes": [
+    "retrieval-source-provenance-display",
+    "single-source-override-resistance",
+    "external-content-citation-badging"
+  ],
+  "human_in_loop": true,
+  "user_actions_in_attack_chain": [
+    {
+      "action": "ask the assistant for the banking details needed to complete a transfer",
+      "normal_workflow": true
+    },
+    {
+      "action": "act on the manipulated details and initiate the transfer",
+      "normal_workflow": false
+    }
+  ],
+  "preconditions": [
+    "passive:assistant ingests received email into a retrieval store",
+    "active:attacker sends a crafted email to the victim organisation"
+  ],
+  "precondition_weight": "moderate",
+  "permission_mode": "default",
+  "consequential_action": "tool-call-chain",
+  "harm_layer": "in-session-only",
+  "outcome": "harmful-guidance",
+  "expected_behavior_exit": false,
+  "vendor_disposition": "unknown",
+  "program": "none",
+  "scope_snapshot_date": "2026-06-04",
+  "scope_tag": "unknown",
+  "sensitivity": "public",
+  "domain": "ai_native",
+  "auto_classified": false,
+  "verified": true,
+  "use_for_rag": true,
+  "raw_ref": "atlas.mitre.org/studies/AML.CS0026",
+  "license": "Apache-2.0; MITRE ATLAS case study AML.CS0026 (c) The MITRE Corporation"
+}

@@ -1,0 +1,216 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rift.local/schemas/attack_path.schema.json",
+  "title": "Rift Attack-Path Map",
+  "description": "Output of /attack-paths mode. Candidate in-scope attack routes for an authorized target within stated program scope. Routes are hypotheses for the researcher to test, not verdicts. The edge is the corpus of past close-reasons placed in front of the model; the system does not out-reason the frontier on scope policy.",
+  "type": "object",
+  "required": ["target", "scope_statement", "program", "authorization_ref", "scope_snapshot_date", "routes"],
+  "properties": {
+    "target": {
+      "type": "string",
+      "description": "Authorized target surface, generic category form. e.g. coding-agent/default-permissions. Injected post-egress from the placeholder; never sent to the frontier."
+    },
+    "scope_statement": {
+      "type": "string",
+      "description": "The authorized program scope this run reasons within. Injected post-egress from the placeholder."
+    },
+    "program": {
+      "type": "string",
+      "enum": ["openai-safety-bb", "0din-mozilla", "msrc", "xai-hackerone", "other"]
+    },
+    "authorization_ref": {
+      "type": "string",
+      "description": "The authorization_ref from authorized-scope.json that permitted this run. Written into every artifact and every egress log line. No ref = run should not have occurred."
+    },
+    "scope_snapshot_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the program-scope text the corpus records were classified against. Routes are in-scope arguments as of this date; scope rules change."
+    },
+    "primary_trust_boundary": {
+      "type": "string",
+      "description": "The boundary family most routes target."
+    },
+
+    "routes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "trust_boundary",
+          "kill_chain_stage",
+          "attack_steps",
+          "in_scope_argument",
+          "out_of_scope_risk",
+          "evidence_to_collect",
+          "safe_observation_goal",
+          "grounded_in"
+        ],
+        "properties": {
+          "name": { "type": "string" },
+          "novelty_note": {
+            "type": "string",
+            "description": "Why this route is non-obvious — the angle the researcher would not have written down unprompted."
+          },
+          "trust_boundary": {
+            "type": "string",
+            "enum": [
+              "workspace-content-to-instruction",
+              "tool-output-laundering",
+              "implicit-user-intent-substitution",
+              "connector-context-confabulation",
+              "chat-rag-confabulation",
+              "other"
+            ]
+          },
+          "kill_chain_stage": {
+            "type": "string",
+            "enum": ["injection", "trust-boundary-collapse", "verification-bypass", "consequential-action", "durable-persistence", "exfil"]
+          },
+
+          "attack_steps": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["action", "actor", "expected_outcome"],
+              "properties": {
+                "action": {
+                  "type": "string",
+                  "description": "What happens at this step. Abstract — never a runnable exploit chain, payload, or live-target command."
+                },
+                "actor": {
+                  "type": "string",
+                  "enum": ["agent", "user", "attacker-content"],
+                  "description": "WHO performs this step. The orchestration axis lives here structurally: 'user' steps after the trigger are mechanically countable HITL risk."
+                },
+                "normal_workflow_action": {
+                  "type": "boolean",
+                  "description": "For actor==user: TRUE if this is an action a reasonable user takes routinely in normal workflow (the OpenAI 'reasonable user behaving normally' test). Grader counts user steps where this is FALSE as HITL-close risk."
+                },
+                "tool_or_technique": { "type": "string" },
+                "expected_outcome": { "type": "string" }
+              },
+              "additionalProperties": false
+            }
+          },
+
+          "in_scope_argument": {
+            "type": "object",
+            "description": "Why this route is argued in-scope. This is a hypothesis for the researcher to test, not an adjudication. Confidence is capped by evidence quality.",
+            "required": ["orchestration", "harm_layer", "precondition_weight", "permission_mode", "confidence", "confidence_basis", "rationale"],
+            "properties": {
+              "orchestration": {
+                "type": "string",
+                "enum": ["model", "user", "mixed"],
+                "description": "model = agent autonomously produces the harm via normal workflow. Pays. user/mixed = user-orchestrated step is in the chain. Grader checks this mechanically against attack_steps[].actor."
+              },
+              "harm_layer": {
+                "type": "string",
+                "enum": ["durable-side-effect", "in-session-only", "display-layer"]
+              },
+              "precondition_weight": {
+                "type": "string",
+                "enum": ["light", "moderate", "heavy"]
+              },
+              "permission_mode": {
+                "type": "string",
+                "enum": ["default", "full-access", "dangerously-bypass", "yolo", "unknown"]
+              },
+              "defending_control_target": {
+                "type": "string",
+                "description": "Which competing vendor/model to test for a DEFENDED control. Presence of a defended control in the corpus converts 'inherent limitation' into 'fixable defect' — the strongest positive signal."
+              },
+              "confidence": {
+                "type": "string",
+                "enum": ["strong", "moderate", "weak"],
+                "description": "strong requires: grounded_in non-empty, orchestration==model, harm_layer==durable-side-effect, precondition_weight==light, permission_mode==default, and all feeding corpus records verified:true + auto_classified:false. Any deviation floors to moderate or weak."
+              },
+              "confidence_basis": {
+                "type": "string",
+                "description": "What evidence grounds this confidence level: which corpus records, what scope snapshot date, whether any feeding record is auto_classified. Honest accounting of the uncertainty."
+              },
+              "rationale": {
+                "type": "string",
+                "description": "Prose: why a reasonable user behaving normally would have their agent take the consequential action without intending it, and why the harm is durable. This is the in-scope argument — the researcher tests whether it holds."
+              }
+            },
+            "additionalProperties": false
+          },
+
+          "out_of_scope_risk": {
+            "type": "array",
+            "minItems": 1,
+            "description": "REQUIRED, minItems:1. The product's differentiator: explicit OOS-close predictions before a week is wasted. 'none-identified' is allowed only when grounded_in is non-empty (you need corpus precedent to claim no close risk). An empty array is a schema reject.",
+            "items": {
+              "type": "object",
+              "required": ["flag", "why", "mitigation"],
+              "properties": {
+                "flag": {
+                  "type": "string",
+                  "enum": [
+                    "hitl-required",
+                    "user-supplies-non-normal-input",
+                    "expected-behavior-exit",
+                    "precondition-heavy",
+                    "display-layer-only",
+                    "non-default-permission-mode",
+                    "low-reproducibility",
+                    "single-vendor-inherent",
+                    "none-identified"
+                  ]
+                },
+                "why": {
+                  "type": "string",
+                  "description": "The specific reason this close could land, tied to the route's steps."
+                },
+                "mitigation": {
+                  "type": "string",
+                  "description": "How to re-shape the test to remove this close. e.g. 'move trigger to passive co-resident content', 'reproduce under default mode', 'find a vendor that defended'."
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+
+          "safe_observation_goal": {
+            "type": "string",
+            "description": "Minimal observation that proves the point WITHOUT escalating beyond authorized scope. The stop line."
+          },
+          "evidence_to_collect": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" }
+          },
+          "severity_upgrade_if": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "dead_end_if": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "grounded_in": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "record_ids of corpus records this route reasons from. Required non-empty for confidence==strong or confidence==moderate. Required non-empty for out_of_scope_risk flag==none-identified. Empty grounded_in forces confidence to weak."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+
+    "do_not_attempt": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Actions outside authorized scope that look tempting but must NOT be run. Echoed back from the prompt's guardrail section."
+    },
+    "do_not_overclaim": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": false
+}

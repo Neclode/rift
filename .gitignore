@@ -1,0 +1,30 @@
+# Secrets — never commit
+*.key
+*.secret
+*.env
+.env
+keys/
+
+# Generated index artifacts
+rift/index/
+**/vectors.npy
+**/chunks.json
+
+# Generated attack-path artifacts
+rift-corpus/generated/
+**/*.generated.json
+
+# Runtime logs / state
+logs/
+*.jsonl
+*.sqlite
+*.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+.venv/
+venv/

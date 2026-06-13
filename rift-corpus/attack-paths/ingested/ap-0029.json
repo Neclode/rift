@@ -1,0 +1,60 @@
+{
+  "record_id": "ap:AP-0029",
+  "source": "atlas",
+  "source_id": "AML.CS0040",
+  "schema_version": "1.0",
+  "ingest_date": "2026-06-04T09:59:48Z",
+  "title": "Prompt injection in a connected shared document poisons an assistant's persistent memory",
+  "description": "A chat assistant with a long-term memory feature pulls in the contents of documents the user references through a connected-app integration. An attacker hides a prompt injection inside a shared document; when the user references it, the document content enters context and the injection writes false facts into the assistant's persistent memory. Those planted memories survive across separate chat sessions and, because the vector is a shared resource, the same document re-poisons anyone who opens it. The durable memory store, not a single session, is the boundary that is corrupted.",
+  "attack_narrative": "The attacker plants an injection in a document and shares it. The victim references the document in a chat; the connected-app feature loads its content; the injection issues memory-write instructions that persist false facts. Subsequent unrelated sessions inherit the poisoned memory, and the shared document keeps re-applying the attack to new viewers.",
+  "failure_class": [
+    "indirect-prompt-injection",
+    "memory-poisoning",
+    "cross-session-persistence"
+  ],
+  "target_surface": "chat-assistant/persistent-memory",
+  "trust_boundary": "other",
+  "tactic": "Persistence",
+  "technique_id": "AML.T0080.000",
+  "technique_name": "AI Agent Context Poisoning: Memory",
+  "escalation_mechanism": "Connected-document content is treated as instruction and issues memory writes; planted facts persist across sessions and the shared document re-poisons new viewers.",
+  "kill_chain_stage": "durable-persistence",
+  "severity": "medium",
+  "cwe_ids": [],
+  "cve_ids": [],
+  "failure_signal": "False facts introduced via a referenced document reappear in unrelated later sessions that never loaded the document.",
+  "impact_statement": "Durable corruption of an assistant's long-term memory that biases future answers across sessions and propagates to others through a shared document.",
+  "mitigation_themes": [
+    "memory-write-gating",
+    "connected-content-as-data-not-instruction",
+    "memory-provenance-and-review"
+  ],
+  "human_in_loop": true,
+  "user_actions_in_attack_chain": [
+    {
+      "action": "reference an attacker-shared document in a chat",
+      "normal_workflow": true
+    }
+  ],
+  "preconditions": [
+    "passive:assistant injects connected-document content into context and can write long-term memory",
+    "active:attacker shares a crafted document with the victim"
+  ],
+  "precondition_weight": "moderate",
+  "permission_mode": "default",
+  "consequential_action": "memory-write",
+  "harm_layer": "durable-side-effect",
+  "outcome": "config-corruption",
+  "expected_behavior_exit": false,
+  "vendor_disposition": "unknown",
+  "program": "none",
+  "scope_snapshot_date": "2026-06-04",
+  "scope_tag": "unknown",
+  "sensitivity": "public",
+  "domain": "ai_native",
+  "auto_classified": false,
+  "verified": true,
+  "use_for_rag": true,
+  "raw_ref": "atlas.mitre.org/studies/AML.CS0040",
+  "license": "Apache-2.0; MITRE ATLAS case study AML.CS0040 (c) The MITRE Corporation"
+}

@@ -1,0 +1,231 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rift.local/schemas/attack_path_record.schema.json",
+  "title": "Rift Attack-Path Corpus Record",
+  "description": "Normalized attacker-path record. One JSON file per record under rift-corpus/attack-paths/. Carries the in-scope decision signals so retrieval can filter and the chunker can lift metadata without re-parsing prose. Fields map 1:1 to the triager close-reason taxonomy.",
+  "type": "object",
+  "required": [
+    "record_id", "source", "schema_version", "ingest_date",
+    "title", "description",
+    "failure_class", "target_surface", "trust_boundary",
+    "kill_chain_stage", "severity",
+    "human_in_loop", "user_actions_in_attack_chain",
+    "precondition_weight", "permission_mode",
+    "consequential_action", "harm_layer",
+    "scope_tag", "sensitivity", "domain", "verified", "use_for_rag"
+  ],
+  "properties": {
+    "record_id": {
+      "type": "string",
+      "description": "src_prefix:original_id, globally unique. e.g. hackerone:1234567, nvd:CVE-2024-1234, ap:AP-0042"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["nvd", "exploitdb", "hackerone", "attck", "atlas", "crescendo", "jailbreakbench", "goat", "manual", "agentdojo", "injecagent", "harmbench"]
+    },
+    "source_id":      { "type": "string" },
+    "schema_version": { "type": "string", "const": "1.0" },
+    "ingest_date":    { "type": "string", "format": "date-time" },
+
+    "title":       { "type": "string", "minLength": 1 },
+    "description": {
+      "type": "string",
+      "minLength": 100,
+      "description": "Quality gate requires >=100 chars. Length is a necessary-not-sufficient check; do not pad with boilerplate."
+    },
+    "attack_narrative": {
+      "type": "string",
+      "description": "How exploitation works — technique prose only. Never raw exploit code, runnable payloads, or live-target specifics."
+    },
+
+    "failure_class": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" },
+      "description": "Hypothesis-family slugs (workspace-content-to-instruction-injection, tool-output-laundering, etc.) plus CWE-derived class labels. At least one required."
+    },
+    "target_surface": {
+      "type": "string",
+      "description": "Generic category form: <product-class>/<mode>. e.g. coding-agent/default-permissions. NEVER a concrete hostname, company name, or IP."
+    },
+    "trust_boundary": {
+      "type": "string",
+      "enum": [
+        "workspace-content-to-instruction",
+        "tool-output-laundering",
+        "implicit-user-intent-substitution",
+        "connector-context-confabulation",
+        "chat-rag-confabulation",
+        "other"
+      ]
+    },
+    "tactic":           { "type": "string" },
+    "technique_id":     { "type": "string", "description": "MITRE T#### / ATLAS AML.T#### / framework technique id." },
+    "technique_name":   { "type": "string" },
+    "escalation_mechanism": { "type": "string" },
+
+    "kill_chain_stage": {
+      "type": "string",
+      "enum": ["injection", "trust-boundary-collapse", "verification-bypass", "consequential-action", "durable-persistence", "exfil"]
+    },
+
+    "severity":   { "type": "string", "enum": ["critical", "high", "medium", "low", "informational"] },
+    "cvss_score": { "type": ["number", "null"], "minimum": 0, "maximum": 10 },
+    "cwe_ids":    { "type": "array", "items": { "type": "string" } },
+    "cve_ids":    { "type": "array", "items": { "type": "string" } },
+
+    "steps_to_reproduce": { "type": "string" },
+    "expected_behavior":  { "type": "string" },
+    "actual_behavior":    { "type": "string" },
+    "failure_signal": {
+      "type": "string",
+      "description": "The observable that confirms the boundary collapsed — the minimal evidence a researcher looks for."
+    },
+    "impact_statement":   { "type": "string" },
+    "mitigation_themes":  { "type": "array", "items": { "type": "string" } },
+
+    "human_in_loop": {
+      "type": "boolean",
+      "description": "TRUE if any step between attacker-content-in-context and consequential-action requires a human decision. TRUE is a strong S003/S006 HITL-close signal."
+    },
+    "user_actions_in_attack_chain": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["action", "normal_workflow"],
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "What the user does. e.g. 'supply URL', 'accept share', 'read output and manually execute'."
+          },
+          "normal_workflow": {
+            "type": "boolean",
+            "description": "TRUE if this is an action a reasonable user takes routinely in normal workflow, independent of the attack. The OpenAI 'reasonable user behaving normally' test lives here. FALSE = user-orchestrated risk."
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Empty array = cleanest model-orchestrated signal. Non-normal-workflow entries each add user-orchestrated close risk."
+    },
+    "preconditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^(passive|active):"
+      },
+      "description": "Each item prefixed 'passive:' (normal workflow triggers it) or 'active:' (attacker needs prior access). 'active:' entries drive precondition_weight toward heavy."
+    },
+    "precondition_weight": {
+      "type": "string",
+      "enum": ["light", "moderate", "heavy"],
+      "description": "heavy = S006 'precondition does the heavy lifting' close. The gate computes this from preconditions[] if not supplied."
+    },
+    "permission_mode": {
+      "type": "string",
+      "enum": ["default", "full-access", "dangerously-bypass", "yolo", "unknown"],
+      "description": "Non-default = OpenAI scope-exclusion risk. 'default' is the only mode that supports a clean in-scope claim."
+    },
+
+    "consequential_action": {
+      "type": "string",
+      "enum": ["file-write", "config-write", "registry-repoint", "network-call", "lockfile-mutation", "tool-call-chain", "memory-write", "display-only"],
+      "description": "display-only = below the consequential-action threshold."
+    },
+    "harm_layer": {
+      "type": "string",
+      "enum": ["durable-side-effect", "in-session-only", "display-layer"],
+      "description": "display-layer = below the consequential-action threshold."
+    },
+    "outcome": {
+      "type": "string",
+      "enum": ["rce-class", "supply-chain-redirect", "data-exfil", "config-corruption", "harmful-guidance", "privilege-escalation", "display-misinformation", "unknown"]
+    },
+
+    "reproducibility": {
+      "type": "object",
+      "properties": {
+        "n_runs":    { "type": "integer", "minimum": 0 },
+        "n_success": { "type": "integer", "minimum": 0 },
+        "rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "<0.5 = below OpenAI Safety BB reproducibility threshold."
+        },
+        "notes": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+
+    "defending_control": {
+      "type": ["string", "null"],
+      "description": "Competing vendor/model that DEFENDED under identical conditions. Presence converts 'inherent limitation' rebuttal into 'fixable defect' — the strongest in-scope evidence."
+    },
+    "expected_behavior_exit": {
+      "type": "boolean",
+      "description": "TRUE if the product operates as documented and the failure is product-intent, not defect. TRUE = strong out-of-scope expected-behavior-exit risk."
+    },
+
+    "vendor_disposition": {
+      "type": "string",
+      "enum": [
+        "in-scope-paid",
+        "in-scope-triaging",
+        "out-of-scope-hitl",
+        "out-of-scope-precondition",
+        "out-of-scope-expected-behavior",
+        "out-of-scope-display-layer",
+        "not-filed",
+        "vdp-no-pay",
+        "unknown"
+      ],
+      "description": "Exact close-reason category — the negative-signal training label for the in-scope classifier."
+    },
+    "triager_quote": {
+      "type": "string",
+      "description": "Verbatim triager rationale. Ground truth for negative-signal interpretation."
+    },
+    "program": {
+      "type": "string",
+      "enum": ["openai-safety-bb", "0din-mozilla", "msrc", "xai-hackerone", "other", "none"],
+      "description": "Which program scope applies. Routing determines which exclusions the in-scope reasoning weights."
+    },
+    "scope_snapshot_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the program-scope text this record was classified against. Scope rules change; freshness matters."
+    },
+
+    "scope_tag": {
+      "type": "string",
+      "enum": ["in_scope", "oos", "unknown"],
+      "description": "Curated in-scope-ness for this record. 'in_scope' requires vendor_disposition in {in-scope-paid, in-scope-triaging}."
+    },
+    "sensitivity": {
+      "type": "string",
+      "enum": ["public", "sanitized_ok", "local_only"],
+      "description": "DEFAULT local_only always. Ingestion agent sets 'public' ONLY on records that pass PII/host/token/exploit-code scrubbing AND human review (auto_classified records cannot reach public). Gate blocks any payload sourced from non-public chunks."
+    },
+    "domain": {
+      "type": "string",
+      "enum": ["traditional_vuln", "ai_native", "methodology", "taxonomy"]
+    },
+    "auto_classified": {
+      "type": "boolean",
+      "default": false,
+      "description": "TRUE if failure_class/trust_boundary/target_surface came from the local classifier, not a human. Auto-classified records: (a) cannot reach verified:true without human review, (b) cannot be tagged public, (c) cap any derived in_scope_confidence at weak."
+    },
+    "verified": {
+      "type": "boolean",
+      "description": "TRUE only after human review. auto_classified:true records cannot be verified:true."
+    },
+    "use_for_rag": { "type": "boolean" },
+
+    "raw_ref": {
+      "type": "string",
+      "description": "Public citation pointer to the source technique (a scheme-less URL such as atlas.mitre.org/studies/AML.CS0016, or a benchmark repo). See rift-corpus/SOURCES.md for the full map with clickable links. Never included in an egress payload."
+    },
+    "license": { "type": "string" }
+  },
+  "additionalProperties": false
+}

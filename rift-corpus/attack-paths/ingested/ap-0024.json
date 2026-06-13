@@ -1,0 +1,59 @@
+{
+  "record_id": "ap:AP-0024",
+  "source": "atlas",
+  "source_id": "AML.CS0016",
+  "schema_version": "1.0",
+  "ingest_date": "2026-06-04T09:59:48Z",
+  "title": "Direct prompt injection in an LLM math app yields host code execution and API-key disclosure",
+  "description": "A publicly reachable LLM application converts a user's natural-language math question into Python that the backend then executes, displaying the code and the result. Because the user prompt flows directly into the code-generation channel, an attacker can override the intended task with prompt-injection text that causes the model to emit code reading the host process environment. The executed code exposed the application's own model API key and could be steered into a denial-of-service that would exhaust the API budget or take the app offline. The trust boundary that collapses is the implicit assumption that generated code is benign because the prompt is 'just a math question'.",
+  "attack_narrative": "The attacker submits a crafted question whose injected suffix instructs the model to ignore the math task and instead generate code that enumerates environment variables and returns their values. The application executes the generated code without a sandbox boundary separating untrusted prompt-derived code from host secrets, so the model's API key leaks back through the normal result display. The same code-execution primitive supports a resource-exhaustion path against the service.",
+  "failure_class": [
+    "direct-prompt-injection",
+    "code-execution",
+    "credential-disclosure"
+  ],
+  "target_surface": "llm-math-app/code-execution",
+  "trust_boundary": "other",
+  "tactic": "Execution",
+  "technique_id": "AML.T0051.000",
+  "technique_name": "LLM Prompt Injection: Direct",
+  "escalation_mechanism": "Prompt flows into an unsandboxed code-generation-and-execution channel; injected code reads host environment and the application's own model API key.",
+  "kill_chain_stage": "consequential-action",
+  "severity": "high",
+  "cwe_ids": [],
+  "cve_ids": [],
+  "failure_signal": "Generated-and-executed code returns host environment values (including the app's model API key) in response to a prompt that requested only a math answer.",
+  "impact_statement": "Disclosure of the application's model API key (durable credential compromise requiring rotation) plus a denial-of-service primitive against a public service.",
+  "mitigation_themes": [
+    "code-execution-sandboxing",
+    "prompt-vs-code-channel-isolation",
+    "secret-isolation-from-runtime"
+  ],
+  "human_in_loop": false,
+  "user_actions_in_attack_chain": [
+    {
+      "action": "submit a crafted question to the public app",
+      "normal_workflow": true
+    }
+  ],
+  "preconditions": [
+    "passive:application auto-executes LLM-generated code derived from user prompts"
+  ],
+  "precondition_weight": "light",
+  "permission_mode": "default",
+  "consequential_action": "tool-call-chain",
+  "harm_layer": "durable-side-effect",
+  "outcome": "rce-class",
+  "expected_behavior_exit": false,
+  "vendor_disposition": "unknown",
+  "program": "none",
+  "scope_snapshot_date": "2026-06-04",
+  "scope_tag": "unknown",
+  "sensitivity": "public",
+  "domain": "ai_native",
+  "auto_classified": false,
+  "verified": true,
+  "use_for_rag": true,
+  "raw_ref": "atlas.mitre.org/studies/AML.CS0016",
+  "license": "Apache-2.0; MITRE ATLAS case study AML.CS0016 (c) The MITRE Corporation"
+}

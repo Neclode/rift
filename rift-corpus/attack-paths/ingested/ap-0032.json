@@ -1,0 +1,60 @@
+{
+  "record_id": "ap:AP-0032",
+  "source": "atlas",
+  "source_id": "AML.CS0029",
+  "schema_version": "1.0",
+  "ingest_date": "2026-06-06T12:00:00Z",
+  "title": "Shared-document connector launders an injection that exfiltrates a chat assistant's conversation",
+  "description": "An AI chat assistant lets a user open and discuss documents shared with them through a productivity-suite connector. An attacker shares a document containing an indirect prompt injection with the victim. When the victim opens the document and asks the assistant about it, the connector-delivered content is treated as trusted in-context material, and the embedded instruction steers the assistant to emit a markdown image whose URL secretly encodes the user's prior conversation. The client auto-renders the image, issuing an outbound request to an attacker-controlled endpoint and exfiltrating the conversation. The trust collapse is that content arriving via a sharing connector is given the same authority as the user's own instructions.",
+  "attack_narrative": "The attacker crafts a document that reads as ordinary shared material but carries an instruction to render a tracking image. The sharing connector places the document in the victim's trusted workspace; the victim's natural act of asking the assistant to summarise or discuss it pulls the attacker text into context. The assistant follows the embedded instruction and returns markdown for an image whose URL has the conversation appended as parameters. Because the client auto-fetches inline images, the render itself performs the exfiltration with no further user action. Hosting the exfil endpoint on an allowlisted first-party scripting domain can sidestep a content-security policy that only constrains image hosts by origin.",
+  "failure_class": [
+    "indirect-prompt-injection",
+    "data-exfiltration",
+    "markdown-image-exfiltration"
+  ],
+  "target_surface": "ai-chat-assistant/document-connector",
+  "trust_boundary": "connector-context-confabulation",
+  "tactic": "Exfiltration",
+  "technique_id": "AML.T0051.001",
+  "technique_name": "LLM Prompt Injection: Indirect",
+  "escalation_mechanism": "A document arriving through a sharing connector is treated as trusted context; the embedded instruction turns an inline-image render into an automatic outbound request that carries the conversation in the URL.",
+  "kill_chain_stage": "exfil",
+  "severity": "high",
+  "cwe_ids": [],
+  "cve_ids": [],
+  "failure_signal": "The assistant emits a markdown image whose URL encodes prior conversation text, and the client auto-renders it, producing an outbound request to a non-first-party endpoint.",
+  "impact_statement": "A victim's private assistant conversation is exfiltrated to an attacker-controlled endpoint with no action beyond opening and discussing a shared document.",
+  "mitigation_themes": [
+    "connector-content-trust-isolation",
+    "outbound-image-url-egress-controls",
+    "conversation-content-in-url-detection"
+  ],
+  "human_in_loop": false,
+  "user_actions_in_attack_chain": [
+    {
+      "action": "open a shared document and ask the assistant about it",
+      "normal_workflow": true
+    }
+  ],
+  "preconditions": [
+    "passive:the assistant ingests connector-shared documents into conversation context",
+    "active:attacker shares a crafted document with the victim"
+  ],
+  "precondition_weight": "moderate",
+  "permission_mode": "default",
+  "consequential_action": "network-call",
+  "harm_layer": "durable-side-effect",
+  "outcome": "data-exfil",
+  "expected_behavior_exit": false,
+  "vendor_disposition": "unknown",
+  "program": "none",
+  "scope_snapshot_date": "2026-06-06",
+  "scope_tag": "unknown",
+  "sensitivity": "public",
+  "domain": "ai_native",
+  "auto_classified": false,
+  "verified": true,
+  "use_for_rag": true,
+  "raw_ref": "atlas.mitre.org/studies/AML.CS0029",
+  "license": "Apache-2.0; MITRE ATLAS case study AML.CS0029 (c) The MITRE Corporation"
+}

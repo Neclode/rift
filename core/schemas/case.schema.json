@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rift.local/schemas/case.schema.json",
+  "title": "Rift Case",
+  "description": "Canonical record for a single Rift case (one finding, one trust-boundary failure, one report unit).",
+  "type": "object",
+  "required": [
+    "case_id",
+    "domain",
+    "surface",
+    "failure_class",
+    "status"
+  ],
+  "properties": {
+    "case_id": {
+      "type": "string",
+      "pattern": "^S[0-9]{3,}(-[a-z0-9-]+)?$",
+      "description": "S-prefixed sequential ID with kebab-case slug, e.g. S001-workspace-content-instruction."
+    },
+    "domain": {
+      "type": "string",
+      "enum": ["ai_native_security"],
+      "default": "ai_native_security"
+    },
+    "surface": {
+      "type": "string",
+      "enum": [
+        "chat_model",
+        "coding_agent",
+        "enterprise_rag",
+        "browser_agent",
+        "file_agent",
+        "memory_agent",
+        "tool_agent",
+        "multi_modal_agent",
+        "unknown"
+      ]
+    },
+    "vendor": {
+      "type": "string",
+      "description": "OpenAI | Microsoft | Google | xAI | Meta | local | other. Free-form; keep lowercase-canonical for retrieval."
+    },
+    "product_surface": {
+      "type": "string",
+      "description": "Concrete product the case targets, e.g. 'a coding-agent CLI', 'Cursor', 'M365 Copilot Chat', 'Codex CLI'."
+    },
+    "mode": {
+      "type": "string",
+      "description": "Permission/operating mode used to reproduce, e.g. 'full-access', 'workspace-write', 'read-only', 'normal-default'."
+    },
+    "tools_enabled": { "type": "boolean", "default": false },
+    "retrieval_enabled": { "type": "boolean", "default": false },
+    "memory_enabled": { "type": "boolean", "default": false },
+    "failure_class": {
+      "type": "string",
+      "description": "Slug of a hypothesis-family card."
+    },
+    "untrusted_input_source": {
+      "type": "string",
+      "description": "Where the untrusted content entered the trust boundary (e.g. 'repo README.md', 'tool stdout', 'retrieved doc', 'memory note')."
+    },
+    "trusted_context_or_capability": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "What was trusted / granted at session start (mode flags, scopes, tools, capabilities)."
+    },
+    "user_intent": {
+      "type": "string",
+      "description": "Stated user intent at session start, in researcher's words."
+    },
+    "model_or_agent_action": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Ordered list of observed actions the model/agent took."
+    },
+    "trust_boundary_crossed": {
+      "type": "string",
+      "description": "Which boundary collapsed (e.g. 'workspace content -> instruction', 'tool output -> agent goal', 'retrieved doc -> user intent')."
+    },
+    "impact_type": {
+      "type": "string",
+      "enum": [
+        "policy_drift",
+        "capability_gain",
+        "data_exfiltration",
+        "side_effecting_action",
+        "evidence_mutation",
+        "durable_compromise",
+        "denial_or_disruption",
+        "user_deception",
+        "other"
+      ]
+    },
+    "not_claimed": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Explicit non-claims to neutralize over-claim triage pushback."
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"]
+    },
+    "severity_defense": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Bullet rebuttals to anticipated downgrade arguments."
+    },
+    "triage_risks": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Anticipated reviewer minimization paths."
+    },
+    "mitigation_themes": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "submitted", "accepted", "rejected", "duplicate", "na", "withdrawn"],
+      "default": "draft"
+    }
+  },
+  "additionalProperties": false
+}

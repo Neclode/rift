@@ -1,0 +1,6 @@
+numpy
+openai>=2.0
+jsonschema>=4.18
+referencing>=0.28
+# Everything else is Python stdlib. Embeddings + generation run through local
+# Ollama (http://localhost:11434) — no torch/transformers/faiss/langchain.

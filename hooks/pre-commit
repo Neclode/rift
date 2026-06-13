@@ -1,0 +1,17 @@
+#!/bin/sh
+# Block committing any corpus record that isn't sensitivity:"public".
+# Enable once:  git config core.hooksPath hooks
+#
+# Finds a REAL Python: the import test fails for the Windows Store stub
+# (it prints "Python was not found" and exits non-zero), so the stub is skipped.
+# If no interpreter is found, the guard warns and allows the commit — a
+# defense-in-depth check must never brick the repo.
+PY=""
+for cand in py python3 python; do
+  if "$cand" -c "import sys" >/dev/null 2>&1; then PY="$cand"; break; fi
+done
+if [ -z "$PY" ]; then
+  echo "rift pre-commit: no Python found on PATH — skipping the public-only corpus guard." >&2
+  exit 0
+fi
+"$PY" scripts/check_corpus_public.py

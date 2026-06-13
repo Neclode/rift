@@ -1,0 +1,60 @@
+{
+  "record_id": "ap:AP-0025",
+  "source": "atlas",
+  "source_id": "AML.CS0020",
+  "schema_version": "1.0",
+  "ingest_date": "2026-06-04T09:59:48Z",
+  "title": "Zero-click indirect prompt injection via an open web page turns a browse-grounded chat into an exfiltrator",
+  "description": "A browse-grounded chat assistant can read the content of web pages the user has open during a session. An attacker who controls a page the victim merely has open — no question about that page is required — plants an injection in its content. When the assistant ingests the page, the injected instructions silently re-task it into a social-engineering role that seeks out and exfiltrates the user's personal information through the ongoing conversation. The boundary collapse is that tool-surfaced page content is treated as trusted instruction rather than untrusted data.",
+  "attack_narrative": "The attacker stages an injection inside otherwise-normal web content. The victim opens the page and continues an unrelated chat. The assistant's browse capability pulls the page text into context, and the laundered instructions redirect the assistant to elicit and forward personal data. No explicit user action targets the malicious page, making the chain effectively zero-click.",
+  "failure_class": [
+    "indirect-prompt-injection",
+    "tool-output-laundering",
+    "data-exfiltration"
+  ],
+  "target_surface": "search-grounded-chat-assistant/web-content",
+  "trust_boundary": "tool-output-laundering",
+  "tactic": "Exfiltration",
+  "technique_id": "AML.T0051.001",
+  "technique_name": "LLM Prompt Injection: Indirect",
+  "escalation_mechanism": "Browse-tool page content is merged into context as instruction; the assistant adopts an attacker-defined persona and harvests user data over the conversation.",
+  "kill_chain_stage": "exfil",
+  "severity": "high",
+  "cwe_ids": [],
+  "cve_ids": [],
+  "failure_signal": "Assistant spontaneously solicits personal information and routes it outward after a page with no user query about it enters the browse context.",
+  "impact_statement": "Silent harvesting and exfiltration of a user's personal information from an open-page injection the victim never interacts with directly.",
+  "mitigation_themes": [
+    "retrieved-content-as-data-not-instruction",
+    "browse-content-provenance",
+    "persona-stability-under-injection"
+  ],
+  "human_in_loop": false,
+  "user_actions_in_attack_chain": [
+    {
+      "action": "keep an attacker-controlled page open while chatting",
+      "normal_workflow": true
+    }
+  ],
+  "preconditions": [
+    "passive:browse-grounded assistant ingests open-page content into chat context",
+    "active:attacker plants an injection on a page the victim opens"
+  ],
+  "precondition_weight": "moderate",
+  "permission_mode": "default",
+  "consequential_action": "tool-call-chain",
+  "harm_layer": "in-session-only",
+  "outcome": "data-exfil",
+  "expected_behavior_exit": false,
+  "vendor_disposition": "unknown",
+  "program": "none",
+  "scope_snapshot_date": "2026-06-04",
+  "scope_tag": "unknown",
+  "sensitivity": "public",
+  "domain": "ai_native",
+  "auto_classified": false,
+  "verified": true,
+  "use_for_rag": true,
+  "raw_ref": "atlas.mitre.org/studies/AML.CS0020",
+  "license": "Apache-2.0; MITRE ATLAS case study AML.CS0020 (c) The MITRE Corporation"
+}

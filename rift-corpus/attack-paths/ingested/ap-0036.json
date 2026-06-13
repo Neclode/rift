@@ -1,0 +1,58 @@
+{
+  "record_id": "ap:AP-0036",
+  "source": "injecagent",
+  "source_id": "injecagent:direct-harm",
+  "schema_version": "1.0",
+  "ingest_date": "2026-06-10T09:55:44Z",
+  "title": "Tool-integrated agent executes an attacker-named harmful tool call laundered through a tool result",
+  "description": "A tool-using assistant fetches content from an external resource (an email, a web page, a record returned by a lookup tool) and treats that returned content as instruction rather than as data. The returned content carries an indirect prompt injection whose direct-harm intent names a consequential tool the agent already holds — deleting records, changing a setting, submitting a request — and the agent emits that tool call. The harm is the emitted call itself: there is no second exfiltration step. The boundary that collapses is that a tool-returned result is untrusted data, not an operator instruction.",
+  "attack_narrative": "The attacker plants the injection inside content the agent will retrieve in the course of a normal task. When the agent ingests the tool result, the injected direct-harm instruction re-tasks it to invoke a specific high-consequence tool with attacker-chosen arguments. The agent's planner adopts the instruction as if the user had issued it and emits the structured call. Scoring is on the emission — the correct tool with the attacker's arguments — not on any prose the agent narrates around it.",
+  "failure_class": [
+    "indirect-prompt-injection",
+    "tool-output-laundering",
+    "excessive-agency"
+  ],
+  "target_surface": "tool-integrated-agent/function-calling",
+  "trust_boundary": "tool-output-laundering",
+  "tactic": "Execution",
+  "escalation_mechanism": "Injection in a tool result is adopted as instruction; the agent emits the attacker-named tool call with attacker-chosen arguments — the action is the breach, independent of narration.",
+  "kill_chain_stage": "consequential-action",
+  "severity": "high",
+  "cwe_ids": [],
+  "cve_ids": [],
+  "failure_signal": "The agent emits a structured call to the attacker-specified tool with the attacker's arguments after ingesting a tool result it was only asked to read or summarize.",
+  "impact_statement": "Autonomous execution of a consequential, attacker-chosen action (a destructive or state-changing tool call) driven entirely by content the agent retrieved as data.",
+  "mitigation_themes": [
+    "tool-result-as-data-not-instruction",
+    "high-consequence-tool-approval-gate",
+    "planner-provenance-tracking"
+  ],
+  "human_in_loop": false,
+  "user_actions_in_attack_chain": [
+    {
+      "action": "ask the agent to perform a normal task that retrieves external content",
+      "normal_workflow": true
+    }
+  ],
+  "preconditions": [
+    "passive:agent ingests tool-returned content into its planning context",
+    "active:attacker plants an injection in content the agent will retrieve"
+  ],
+  "precondition_weight": "moderate",
+  "permission_mode": "default",
+  "consequential_action": "tool-call-chain",
+  "harm_layer": "durable-side-effect",
+  "outcome": "config-corruption",
+  "expected_behavior_exit": false,
+  "vendor_disposition": "unknown",
+  "program": "none",
+  "scope_snapshot_date": "2026-06-10",
+  "scope_tag": "unknown",
+  "sensitivity": "public",
+  "domain": "methodology",
+  "auto_classified": false,
+  "verified": true,
+  "use_for_rag": true,
+  "raw_ref": "github.com/uiuc-kang-lab/InjecAgent",
+  "license": "MIT; InjecAgent (UIUC), (c) 2023 Qiusi Zhan, arXiv:2403.02691"
+}

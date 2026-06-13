@@ -1,0 +1,60 @@
+{
+  "record_id": "ap:AP-0031",
+  "source": "atlas",
+  "source_id": "AML.CS0046",
+  "schema_version": "1.0",
+  "ingest_date": "2026-06-04T09:59:48Z",
+  "title": "Document injection drives a computer-use agent to invoke its shell tool and destroy user data",
+  "description": "A computer-use agent with a shell tool can be asked to interact with documents. An attacker embeds an indirect prompt injection — combined with jailbreak and obfuscation framing that reframes the environment as a safe sandbox — inside a document file. When the user asks the agent to work with the document, the injected instructions bypass the agent's guardrails and cause it to invoke its shell tool and run a recursive filesystem-deletion command, destroying the victim's data. The document the user asked the agent to read is laundered into a high-privilege tool invocation.",
+  "attack_narrative": "The attacker plants the injection in a document and relies on the victim asking the agent to open or summarise it. Obfuscation and a fake 'safe test environment' frame defeat the guardrails; the agent treats the document text as operator instruction and calls its shell tool to delete files. The destructive effect is immediate and durable; no separate approval gate intercepts the tool call.",
+  "failure_class": [
+    "indirect-prompt-injection",
+    "guardrail-jailbreak",
+    "destructive-tool-invocation"
+  ],
+  "target_surface": "computer-use-agent/document-interaction",
+  "trust_boundary": "tool-output-laundering",
+  "tactic": "Impact",
+  "technique_id": "AML.T0101",
+  "technique_name": "Data Destruction via AI Agent Tool Invocation",
+  "escalation_mechanism": "Obfuscated 'safe sandbox' framing in document text bypasses guardrails; agent treats it as instruction and invokes its shell tool for recursive filesystem deletion.",
+  "kill_chain_stage": "consequential-action",
+  "severity": "critical",
+  "cwe_ids": [],
+  "cve_ids": [],
+  "failure_signal": "Agent issues a destructive shell command deleting user files after being asked only to interact with an attacker-supplied document.",
+  "impact_statement": "Irreversible destruction of the victim's filesystem data executed autonomously by the agent from a document the user merely asked it to read.",
+  "mitigation_themes": [
+    "document-content-as-data-not-instruction",
+    "high-impact-tool-approval-gate",
+    "guardrail-resistance-to-sandbox-reframing"
+  ],
+  "human_in_loop": false,
+  "user_actions_in_attack_chain": [
+    {
+      "action": "ask the agent to interact with an attacker-supplied document",
+      "normal_workflow": true
+    }
+  ],
+  "preconditions": [
+    "passive:computer-use agent reads documents and can invoke a shell tool",
+    "active:attacker supplies a document containing a hidden injection"
+  ],
+  "precondition_weight": "moderate",
+  "permission_mode": "default",
+  "consequential_action": "tool-call-chain",
+  "harm_layer": "durable-side-effect",
+  "outcome": "rce-class",
+  "expected_behavior_exit": false,
+  "vendor_disposition": "unknown",
+  "program": "none",
+  "scope_snapshot_date": "2026-06-04",
+  "scope_tag": "unknown",
+  "sensitivity": "public",
+  "domain": "ai_native",
+  "auto_classified": false,
+  "verified": true,
+  "use_for_rag": true,
+  "raw_ref": "atlas.mitre.org/studies/AML.CS0046",
+  "license": "Apache-2.0; MITRE ATLAS case study AML.CS0046 (c) The MITRE Corporation"
+}
