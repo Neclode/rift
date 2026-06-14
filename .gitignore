@@ -13,6 +13,8 @@ rift/index/
 # Generated attack-path artifacts
 rift-corpus/generated/
 **/*.generated.json
+# ...except the committed showcase example under examples/
+!examples/**/*.generated.json
 
 # Runtime logs / state
 logs/
