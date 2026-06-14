@@ -1,0 +1,11 @@
+{
+  "note": "Illustrative example artifact, hand-authored to show output shape. Not from a live engagement.",
+  "mode": "research",
+  "authorization_ref": "INTERNAL-RESEARCH",
+  "grounded_in": [
+    "ap:AP-0030",
+    "ap:AP-0034"
+  ],
+  "schema_valid": true,
+  "artifact_hash": "dcc0fdc28d7fc76ca898622ea996473478cf80b4950fb474b4eddaf295a53260"
+}

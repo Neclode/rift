@@ -26,7 +26,7 @@ python rift/ingest.py                                          # build the local
 python rift/attack_path.py --target "coding-agent/default-permissions"
 ```
 
-The egress gate prints the exact payload and asks you to confirm before anything is sent — that's the safety boundary, not a snag. Then a ranked, schema-validated attack path is written to `rift-corpus/generated/`, each route citing the real techniques it drew from.
+The egress gate prints the exact payload and asks you to confirm before anything is sent — that's the safety boundary, not a snag. Then a ranked, schema-validated attack path is written to `rift-corpus/generated/`, each route citing the real techniques it drew from — both as canonical JSON and as a human-readable Markdown report. **Want to see the output first?** [`examples/cases/example-attack-path/`](examples/cases/example-attack-path/attack-path.generated.md) is a complete rendered sample.
 
 It runs in **research mode** by default — explore any generic product class, no setup. For an authorized engagement, see [Scope & modes](#scope-and-intent). To just see what retrieval pulls for a phrase: `python rift/query.py "trust boundary collapse for a coding agent" --k 5`.
 

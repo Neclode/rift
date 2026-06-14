@@ -22,6 +22,7 @@ from provider import (rift_generate, RIFT_REASON_MODEL, RIFT_STRUCTURE_MODEL,
                       IS_LOCAL, ProviderError, provider_info, role_is_local)
 from validate import validate_attack_path, AttackPathValidationError
 from casestore import save_case_artifact, ArtifactExists, GENERATED_ROOT
+from render_md import render_attack_path_md
 from query import retrieve
 
 def _extract_json_block(text: str):
@@ -563,7 +564,11 @@ def map_attack_paths(target: str, scope_statement: str, program: str, *,
                 "sources": [c.get("source") for c in chunks],
                 "reference_sources": [c.get("source") for c in reference_chunks]}
     try:
-        artifact_path = save_case_artifact(_run_id(target, program), obj, structured,
+        # Human-readable view rendered deterministically from the validated obj —
+        # never the raw model text (which is just a JSON fence). The canonical
+        # machine artifact stays the .generated.json; this is a faithful render.
+        artifact_path = save_case_artifact(_run_id(target, program), obj,
+                                           render_attack_path_md(obj),
                                            run_meta, schema_valid=True, force=force,
                                            artifact_name="attack-path", root=GENERATED_ROOT)
     except ArtifactExists as e:
