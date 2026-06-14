@@ -1,4 +1,4 @@
-![Rift — local-first attack-path reasoning for AI red-teamers](assets/hero.svg)
+![Rift — local-first attack-path reasoning for AI red-team and bug-bounty research](assets/banner.png)
 
 # Rift
 
