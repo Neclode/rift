@@ -93,6 +93,18 @@ Rift is a tool for **authorized** adversarial assessment of AI products. Its cor
 
 **Modes.** By default Rift runs in `research` mode: it explores a generic product class (e.g. `coding-agent/default-permissions`) and **refuses concrete or named targets** — you cannot point it at a hostname or company. (`--mode bounty` adds an authorized-scope allowlist for real, authorized engagements.) If you route a reasoning step to a *remote* API, the egress gate shows you the exact bytes and waits for confirmation — set `RIFT_ALLOW_LOCAL_AUTOCONFIRM=1` only for trusted local runs.
 
+## Using Rift on a bug-bounty program
+
+Bounty work has the same blank-page problem as a red-team engagement, plus a sharper cost: every route you chase that turns out to be expected behavior or out-of-bounds is a wasted submission cycle. `--mode bounty` is built for exactly that.
+
+In bounty mode, retrieval is constrained to corpus precedents tagged `scope_tag: in_scope` — techniques that represent a legitimate vulnerability class, not expected behavior — and, when you also pass `--trust-boundary`, further narrowed to records matching the `target_surface` you declared. So the routes it hands you are grounded in real, in-scope precedent and aimed at the surface you're testing, instead of a pile of plausible-but-unsubmittable ideas. Every artifact also carries an `authorization_ref`, so a route generated for an authorized engagement can never be confused with an internal-research hypothesis.
+
+What this does **not** do — and the distinction matters:
+
+> **Rift filters to what you authorize; it does not read or certify any program's scope.** "In scope" inside Rift means *grounded in a legitimate-finding precedent* — it is **not** a check against a specific program's asset list. You still confirm a target is on the program's authorized scope before you touch it and before you submit. Rift narrows the search to your declared surface; the legal boundary is yours to own.
+
+Used that way, bounty mode is a focus tool: fewer dead-end routes, every suggestion traceable to a published technique, and a built-in egress gate so nothing about your engagement leaks if you route a pass to a remote model.
+
 ## Adding your own records
 
 Every record carries a `sensitivity` tag, and it's the basis of the egress gate's first layer:
